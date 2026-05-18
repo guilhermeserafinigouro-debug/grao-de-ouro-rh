@@ -203,7 +203,7 @@ const VagaDetail = () => {
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
-  const FLW_BASE_URL = "https://api.flw.chat/chat/v1/channel/wa/5563992339345";
+  const FLW_BASE_URL = "https://api.flw.chat/chat/v1/channel/wa/5563999182402";
   const RESUMO_MAX_LENGTH = 500;
 
   const handleSubmit = async (e: React.FormEvent) => {
