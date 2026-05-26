@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(powershell -Command \"Compress-Archive -Path 'dist\\\\*' -DestinationPath 'siterh.zip' -Force\")"
+    ]
+  }
+}

@@ -206,6 +206,20 @@ const VagaDetail = () => {
   const FLW_BASE_URL = "https://api.flw.chat/chat/v1/channel/wa/5563999182402";
   const RESUMO_MAX_LENGTH = 500;
 
+  const PORTAL_WEBHOOK_URL =
+    "https://n8n.srv894982.hstgr.cloud/webhook/aa42d93a-eff4-436a-992b-c773e0b01263";
+  const PORTAL_WEBHOOK_AUTH = "Basic " + btoa("portal-vagas:bb6ba615-6991-47d2-bcb9-307a757df200");
+
+  const formatWhatsappE164 = (masked: string) => {
+    const digits = masked.replace(/\D/g, "");
+    return digits ? `+55|${digits}` : "";
+  };
+
+  const formatSalaryExpectation = (masked: string) => {
+    if (!masked) return "";
+    return masked.replace(/[^\d,]/g, "").replace(/^,+/, "");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -225,6 +239,58 @@ const VagaDetail = () => {
 
     setIsSubmitting(true);
     try {
+      const payload = {
+        source: "portal_vagas",
+        eventType: "JOB_APPLICATION_CREATED",
+        sentAt: new Date().toISOString(),
+        job: {
+          uuid: vaga.uuid || null,
+          slug: vaga.slug,
+          title: vaga.titulo,
+          company: vaga.empresa,
+          location: vaga.localizacao,
+        },
+        candidate: {
+          fullName: form.nome,
+          email: form.email,
+          whatsapp: formatWhatsappE164(form.whatsapp),
+          city: form.cidade,
+          linkedinOrPortfolio: form.linkedin || "",
+          salaryExpectation: formatSalaryExpectation(form.pretensao),
+          professionalSummary: form.resumo || "",
+        },
+      };
+
+      console.log("[Webhook] URL:", PORTAL_WEBHOOK_URL);
+      console.log("[Webhook] Payload:", payload);
+
+      fetch(PORTAL_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: PORTAL_WEBHOOK_AUTH,
+        },
+        body: JSON.stringify(payload),
+      })
+        .then(async (res) => {
+          const bodyText = await res.text().catch(() => "");
+          if (res.ok) {
+            console.log(
+              `%c[Webhook] ✅ Sucesso ${res.status} ${res.statusText}`,
+              "color: green; font-weight: bold;",
+              bodyText
+            );
+          } else {
+            console.error(
+              `[Webhook] ❌ Falha HTTP ${res.status} ${res.statusText}`,
+              bodyText
+            );
+          }
+        })
+        .catch((err) => {
+          console.error("[Webhook] ❌ Erro de rede/CORS:", err);
+        });
+
       const mensagem =
         `Nova Candidatura\n\n` +
         `Vaga: ${vaga.titulo}\n` +
